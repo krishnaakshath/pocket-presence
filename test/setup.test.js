@@ -85,3 +85,15 @@ test('buildPhoneAutomationInstructions fills in real values for start and stop U
   assert.match(text, /\/stop\?token=abc123/);
   assert.match(text, /:39393/);
 });
+
+test('buildPhoneAutomationInstructions uses a real local IP when one is provided', () => {
+  const text = buildPhoneAutomationInstructions({
+    gameName: 'Call of Duty: Mobile',
+    sharedSecret: 'abc123',
+    port: 39393,
+    localIp: '192.168.1.42',
+  });
+  assert.match(text, /http:\/\/192\.168\.1\.42:39393\/start\?token=abc123/);
+  assert.match(text, /http:\/\/192\.168\.1\.42:39393\/stop\?token=abc123/);
+  assert.doesNotMatch(text, /<this-machine-IP>/);
+});

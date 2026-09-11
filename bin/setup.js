@@ -5,16 +5,17 @@ function generateSharedSecret() {
   return crypto.randomBytes(24).toString('hex');
 }
 
-function buildPhoneAutomationInstructions({ gameName, sharedSecret, port }) {
+function buildPhoneAutomationInstructions({ gameName, sharedSecret, port, localIp }) {
+  const host = localIp || '<this-machine-IP>';
   return [
     `Point your phone automation (Tasker/MacroDroid on Android, Shortcuts on iOS) at this machine's IP.`,
-    `On ${gameName} opened: POST http://<this-machine-IP>:${port}/start?token=${sharedSecret}`,
-    `On ${gameName} closed:  POST http://<this-machine-IP>:${port}/stop?token=${sharedSecret}`,
+    `On ${gameName} opened: POST http://${host}:${port}/start?token=${sharedSecret}`,
+    `On ${gameName} closed:  POST http://${host}:${port}/stop?token=${sharedSecret}`,
     `If your phone isn't on the same network, set up Tailscale first — see docs/tailscale.md — and use the Tailscale IP instead.`,
   ].join('\n');
 }
 
-async function runWizard({ prompt, testDiscordConnection, platform, installers, writeEnvFile, log = console.log }) {
+async function runWizard({ prompt, testDiscordConnection, platform, installers, writeEnvFile, localIp, log = console.log }) {
   const gameName = (await prompt('Game name', 'Call of Duty: Mobile')).trim() || 'Call of Duty: Mobile';
   const clientId = (await prompt('Discord Application ID', '')).trim();
   if (!clientId) {
@@ -51,7 +52,7 @@ async function runWizard({ prompt, testDiscordConnection, platform, installers, 
   return {
     config,
     installResult,
-    phoneAutomationInstructions: buildPhoneAutomationInstructions(config),
+    phoneAutomationInstructions: buildPhoneAutomationInstructions({ ...config, localIp }),
   };
 }
 
@@ -60,6 +61,7 @@ module.exports = { generateSharedSecret, runWizard, buildPhoneAutomationInstruct
 if (require.main === module) {
   const readline = require('readline/promises');
   const fs = require('fs');
+  const os = require('os');
   const { Client } = require('@xhayper/discord-rpc');
   const macos = require('../src/platform/macos');
   const windows = require('../src/platform/windows');
@@ -86,17 +88,31 @@ if (require.main === module) {
     }
   };
 
+  // Values are quoted so a "#" in (say) a game name isn't treated as the
+  // start of an inline comment — dotenv strips the matching quotes on read.
   const writeEnvFile = async (config) => {
     const lines = [
-      `GAME_NAME=${config.gameName}`,
-      `DISCORD_APP_CLIENT_ID=${config.clientId}`,
-      `ICON_KEY=${config.iconKey ?? ''}`,
-      `SHARED_SECRET=${config.sharedSecret}`,
+      `GAME_NAME="${config.gameName}"`,
+      `DISCORD_APP_CLIENT_ID="${config.clientId}"`,
+      `ICON_KEY="${config.iconKey ?? ''}"`,
+      `SHARED_SECRET="${config.sharedSecret}"`,
       `PORT=${config.port}`,
       '',
     ];
     fs.writeFileSync(path.join(projectRoot, '.env'), lines.join('\n'), 'utf8');
   };
+
+  function detectLocalIp() {
+    const interfaces = os.networkInterfaces();
+    for (const name of Object.keys(interfaces)) {
+      for (const iface of interfaces[name]) {
+        if (iface.family === 'IPv4' && !iface.internal) {
+          return iface.address;
+        }
+      }
+    }
+    return null;
+  }
 
   const installers = {
     darwin: (config) => macos.install({ gameName: config.gameName, projectRoot }),
@@ -104,7 +120,7 @@ if (require.main === module) {
     linux: (config) => linux.install({ gameName: config.gameName, projectRoot }),
   };
 
-  runWizard({ prompt, testDiscordConnection, platform: process.platform, installers, writeEnvFile })
+  runWizard({ prompt, testDiscordConnection, platform: process.platform, installers, writeEnvFile, localIp: detectLocalIp() })
     .then((result) => {
       console.log('\nSetup complete!\n');
       console.log(result.phoneAutomationInstructions);

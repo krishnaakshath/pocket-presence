@@ -9,6 +9,9 @@
     "setup": "node bin/setup.js",
     "test": "node --test"
   },
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "@xhayper/discord-rpc": "^1.3.4",
     "dotenv": "^16.4.5"

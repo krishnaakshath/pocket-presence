@@ -34,7 +34,11 @@ test('install writes the unit file and invokes the systemctl runner', () => {
 
   assert.equal(result.name, 'pocket-presence-call-of-duty-mobile');
   assert.equal(fs.existsSync(result.unitPath), true);
-  assert.deepEqual(calls, [['--user', 'enable', '--now', 'pocket-presence-call-of-duty-mobile.service']]);
+  assert.deepEqual(calls, [
+    ['--user', 'daemon-reload'],
+    ['--user', 'enable', 'pocket-presence-call-of-duty-mobile.service'],
+    ['--user', 'restart', 'pocket-presence-call-of-duty-mobile.service'],
+  ]);
 
   fs.rmSync(tmpDir, { recursive: true, force: true });
 });

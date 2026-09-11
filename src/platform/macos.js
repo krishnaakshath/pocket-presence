@@ -43,7 +43,15 @@ function generatePlist({ gameName, nodePath, serverPath, workingDirectory, logPa
 `;
 }
 
-function defaultRunLaunchctl(plistPath) {
+// Boot out any already-loaded copy first so re-running the wizard replaces
+// the old process (which is holding the old shared secret) instead of
+// failing on an already-bootstrapped label.
+function defaultRunLaunchctl(plistPath, label) {
+  try {
+    execFileSync('launchctl', ['bootout', `gui/${process.getuid()}`, label]);
+  } catch {
+    // fine if it wasn't already loaded
+  }
   execFileSync('launchctl', ['bootstrap', `gui/${process.getuid()}`, plistPath]);
 }
 
@@ -67,7 +75,7 @@ function install({
 
   fs.mkdirSync(launchAgentsDir, { recursive: true });
   fs.writeFileSync(plistPath, plistContent, 'utf8');
-  runLaunchctl(plistPath);
+  runLaunchctl(plistPath, label);
 
   return { label, plistPath };
 }

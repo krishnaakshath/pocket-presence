@@ -29,8 +29,8 @@ function defaultRunSystemctl(args) {
 }
 
 // Uses systemd's documented --user unit mechanism. Not personally verified
-// on real Linux hardware — if `systemctl --user enable --now` fails on your
-// distro (e.g. lingering not enabled), please open an issue with the error.
+// on real Linux hardware — if `systemctl --user` fails on your distro
+// (e.g. lingering not enabled), please open an issue with the error.
 function install({
   gameName,
   projectRoot,
@@ -49,7 +49,12 @@ function install({
 
   fs.mkdirSync(unitsDir, { recursive: true });
   fs.writeFileSync(unitPath, unitContent, 'utf8');
-  runSystemctl(['--user', 'enable', '--now', `${name}.service`]);
+  // daemon-reload picks up unit file changes, enable is idempotent and keeps
+  // it starting on future logins, and restart unconditionally bounces an
+  // already-running unit so it re-reads the freshly written .env.
+  runSystemctl(['--user', 'daemon-reload']);
+  runSystemctl(['--user', 'enable', `${name}.service`]);
+  runSystemctl(['--user', 'restart', `${name}.service`]);
 
   return { name, unitPath };
 }

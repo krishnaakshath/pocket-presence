@@ -157,7 +157,10 @@ function createBridge({ config, discordClient }) {
 module.exports = { timingSafeTokenMatch, buildActivity, createBridge };
 
 if (require.main === module) {
-  require('dotenv').config();
+  // Resolve .env relative to the project root, not the cwd — Windows'
+  // schtasks.exe has no way to set a working directory, so the service
+  // otherwise starts in %windir%\system32 and never finds .env.
+  require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
   const { Client } = require('@xhayper/discord-rpc');
   const { loadConfig } = require('./config');
 
@@ -179,8 +182,13 @@ if (require.main === module) {
 
   bridge.connect();
 
-  process.on('SIGINT', async () => {
+  // launchctl bootout and systemctl --user stop both send SIGTERM, so the
+  // presence-clearing shutdown path has to handle it as well as SIGINT.
+  async function handleShutdownSignal() {
     await bridge.shutdown();
     process.exit(0);
-  });
+  }
+
+  process.on('SIGINT', handleShutdownSignal);
+  process.on('SIGTERM', handleShutdownSignal);
 }

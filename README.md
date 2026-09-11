@@ -26,7 +26,7 @@ native support.
 
 - A computer that can stay on with **Discord desktop running** — it doesn't
   need to be actively in use, just on.
-- [Node.js](https://nodejs.org) 18 or newer on that computer.
+- [Node.js](https://nodejs.org) 20 or newer on that computer.
 - A phone automation app: [Tasker](https://play.google.com/store/apps/details?id=net.dinglisch.android.taskerm)
   or [MacroDroid](https://play.google.com/store/apps/details?id=com.arlosoft.macrodroid)
   on Android, or the built-in **Shortcuts** app on iOS.
@@ -66,7 +66,7 @@ Then configure your phone:
 
 | OS | Auto-start mechanism | Status |
 |---|---|---|
-| macOS | LaunchAgent | Verified end-to-end on real hardware |
+| macOS | LaunchAgent | Generates the same LaunchAgent configuration verified end-to-end on real hardware |
 | Windows | Scheduled Task (`schtasks.exe`) | Implemented against Microsoft's documented syntax; **not yet verified on real Windows hardware** |
 | Linux | systemd `--user` unit | Implemented against systemd's documented mechanism; **not yet verified on real Linux hardware** |
 
