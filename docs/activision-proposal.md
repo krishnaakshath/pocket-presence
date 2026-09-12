@@ -1,7 +1,7 @@
 # Proposal: Native Discord Rich Presence Support for Call of Duty: Mobile
 
 **Author:** krishnaakshath
-**Date:** 2026-09-12
+**Date:** 2026-09-12 (updated 2026-09-13 — see the Discord Social SDK 1.10 section below)
 **Status:** Draft, ready to submit
 **Supporting evidence:** [PocketPresence](https://github.com/krishnaakshath/pocket-presence) — a working, open-source proof-of-concept
 
@@ -9,24 +9,56 @@
 
 ## The ask, in one sentence
 
-Add Discord Rich Presence support to Call of Duty: Mobile using Discord's
-official Game SDK, so players' "Playing Call of Duty: Mobile" status appears
-automatically on Discord — the same way it already does for hundreds of PC
-titles — with no third-party tooling required.
+Integrate Discord's **Social SDK** (version 1.10+, generally available since
+August 2026) into Call of Duty: Mobile's Android and iOS clients, so
+players' "Playing Call of Duty: Mobile" status — including game mode and
+party info — appears automatically on Discord, natively from the phone,
+with no PC, no phone automation, and no third-party tooling required.
 
 ## The problem
 
 Call of Duty: Mobile has no native Discord integration. Players who want
 friends to see they're playing currently have no option, even though:
 
-- Discord Rich Presence is a mature, well-documented, free integration path
-  (Discord's Game SDK / Social SDK) already used by a huge number of games.
+- Discord's Social SDK now has **general-availability mobile support**
+  (Android 7.0+, iOS 15.1+, since v1.10 in August 2026) with Rich Presence
+  built in — this isn't a request for Discord to build something new, it's
+  a request for CODM to adopt something that already ships today.
 - CODM has an active, Activision-adopted Discord community
   (`discord.gg/codmobile`) — the exact audience this feature would serve is
   already gathered on the platform it would integrate with.
 - Player demand for this specific feature is real and documented (a support
   thread on Discord's own community forums explicitly requests CODM Rich
   Presence support).
+
+## Why this is a stronger ask now: Discord Social SDK 1.10
+
+This proposal was originally written pointing at Discord's Rich Presence
+tooling in general terms. Since then, a directly relevant update landed:
+**Discord Social SDK version 1.10 reached general availability in August
+2026 with full mobile platform support** — this removes the single biggest
+objection a studio could raise (that mobile-native Rich Presence "isn't
+really possible yet").
+
+What's confirmed, directly from Discord's own developer documentation:
+
+- **Supported today:** Android 7.0+ and iOS 15.1+, with SDK support for
+  standalone C++, Unity, and Unreal Engine.
+- **On Android, it's radically simple:** a game can publish Rich Presence
+  directly from the phone with the Discord app merely installed and signed
+  in — **no account-linking step, no PC, no companion app of any kind.**
+- **On iOS**, one-time account linking is required, but the whole flow still
+  runs entirely on-device — again, no desktop companion.
+- **It reports real game state**, not just "app open" — Discord's own
+  description explicitly calls out **game mode and party status** as part
+  of what gets shown. That's the exact Multiplayer/Ranked/Battle Royale
+  distinction PocketPresence structurally cannot provide (see the
+  comparison below), because a third-party bridge only ever sees
+  "app running," never what's actually happening inside a match.
+
+In short: the technology this proposal asks for isn't hypothetical or
+years away — it shipped this year, is documented, and is already built for
+the exact engines CODM is likely to be running on.
 
 ## Proof it's technically straightforward and worth building
 
@@ -63,14 +95,17 @@ moment this is built into the game client instead of bolted on externally:
 
 ## What implementation actually involves
 
-Discord's [Game SDK](https://discord.com/developers/docs/developer-tools/game-sdk)
-(now folded into the broader [Social SDK](https://discord.com/developers/docs/discord-social-sdk/overview))
-is free, well-documented, and designed for exactly this: exposing rich,
-structured presence data (not just "open/closed," unlike a third-party
+Discord's [Social SDK](https://docs.discord.com/developers/discord-social-sdk/overview)
+is free and publicly documented — start here:
+[Rich Presence on Mobile](https://docs.discord.com/developers/discord-social-sdk/core-concepts/mobile).
+It's designed for exactly this: exposing rich, structured presence data
+(game mode, party status — not just "open/closed," unlike a third-party
 bridge) directly from the game client on both Android and iOS. Since CODM
 already has an Activision-registered Discord presence (the community
 server), the account/branding setup that normally takes the most time is
-already in place.
+already in place. The remaining work is engine-side integration —
+non-trivial, but a known, bounded task against a maintained SDK, not
+open-ended R&D.
 
 ## Submission
 
@@ -84,15 +119,19 @@ likely reach:
    (`support.activision.com/feedback-and-bug-report`, Call of Duty: Mobile)
    — filed as a formal feature request with this document linked.
 3. **Discord's own developer/business contact form**
-   (`discord.com/developers/contact-us`) — submitted noting Discord's own
-   interest in seeing more mobile titles adopt Social SDK integration.
+   (`discord.com/developers/contact-us`) — submitted noting that Discord
+   itself just shipped mobile Social SDK support (v1.10, August 2026) and
+   is presumably looking for exactly this kind of high-profile mobile title
+   to showcase it with.
 
 ## Expectations, honestly
 
 This is a long-shot outreach effort, not a submission with a guaranteed or
-even likely response — there is no dedicated feature-suggestion channel at
-Activision or TiMi Studio (CODM's actual developer), and no known precedent
-of a fan-built bridge leading to native adoption in any game. It's worth
+even likely response — the Social SDK's mobile GA makes the *technical*
+case much stronger, but it doesn't change the actual bottleneck: there is
+no dedicated feature-suggestion channel at Activision or TiMi Studio
+(CODM's actual developer), and no known precedent of a fan-built bridge
+leading to native adoption in any game. It's worth
 doing anyway: the cost is low, the evidence is real and freely reusable by
 anyone who wants to make the same case, and if it never gets a reply, the
 open-source bridge still solves the problem for anyone willing to set it up
