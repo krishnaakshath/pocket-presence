@@ -102,6 +102,17 @@ function createBridge({ config, discordClient }) {
       return;
     }
 
+    if (req.method === 'GET' && url.pathname === '/health') {
+      if (discordReady) {
+        res.writeHead(200);
+        res.end('ready');
+      } else {
+        res.writeHead(503);
+        res.end('not ready — Discord desktop not connected');
+      }
+      return;
+    }
+
     if (req.method !== 'POST') {
       res.writeHead(405);
       res.end('Method not allowed — use POST');

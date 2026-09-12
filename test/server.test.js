@@ -60,6 +60,29 @@ test('bridge server returns 503 on /start before Discord is ready', async (t) =>
   assert.equal(res.status, 503);
 });
 
+test('bridge server reports readiness on GET /health', async (t) => {
+  const config = { gameName: 'Test Game', clientId: 'x', sharedSecret: 'right-token', port: 0 };
+  const discordClient = createFakeDiscordClient();
+  const bridge = createBridge({ config, discordClient });
+  await new Promise((resolve) => bridge.server.listen(0, resolve));
+  t.after(() => bridge.server.close());
+
+  const { port } = bridge.server.address();
+
+  const notReady = await fetch(`http://127.0.0.1:${port}/health?token=right-token`, { method: 'GET' });
+  assert.equal(notReady.status, 503);
+
+  await bridge.connect();
+  await new Promise((resolve) => setImmediate(resolve));
+
+  const ready = await fetch(`http://127.0.0.1:${port}/health?token=right-token`, { method: 'GET' });
+  assert.equal(ready.status, 200);
+  assert.equal(await ready.text(), 'ready');
+
+  const wrongToken = await fetch(`http://127.0.0.1:${port}/health?token=wrong-token`, { method: 'GET' });
+  assert.equal(wrongToken.status, 403);
+});
+
 test('bridge server sets and clears Discord presence once connected', async (t) => {
   const config = { gameName: 'Test Game', clientId: 'x', sharedSecret: 'right-token', port: 0, iconKey: 'icon' };
   const discordClient = createFakeDiscordClient();
