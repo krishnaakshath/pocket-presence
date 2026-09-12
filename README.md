@@ -5,6 +5,12 @@ support it — Call of Duty: Mobile is the motivating example throughout this
 README, but nothing in the code is CODM-specific. Point PocketPresence at any
 Discord Application and any game name, and it works the same way.
 
+<p align="center">
+  <img src="docs/images/discord-rich-presence-demo.png" alt="Discord showing 'Playing Call of Duty Mobile — In-Game' with an elapsed timer" width="420">
+  <br>
+  <em>Real output — CODM opened on a phone with no native Discord integration, no manual toggling.</em>
+</p>
+
 ## Why this exists
 
 Discord Rich Presence can only be *set* through a local connection to the
@@ -21,6 +27,30 @@ Android, Shortcuts on iOS — no separate app needed there) tells the bridge
 "the game just opened" or "just closed," and the bridge sets or clears your
 Discord status accordingly. To everyone else on Discord, it looks the same as
 native support.
+
+## How it works
+
+```mermaid
+sequenceDiagram
+    participant Game as Game on your phone
+    participant Auto as Tasker / MacroDroid<br>(or Shortcuts on iOS)
+    participant Bridge as PocketPresence<br>(runs on your PC)
+    participant Discord as Discord desktop
+
+    Game->>Auto: App opened
+    Auto->>Bridge: POST /start?token=...
+    Bridge->>Discord: Set Rich Presence (local RPC)
+    Note over Discord: Friends see "Playing <Game>"
+
+    Game->>Auto: App closed
+    Auto->>Bridge: POST /stop?token=...
+    Bridge->>Discord: Clear Rich Presence
+```
+
+The phone never talks to Discord directly — it only tells your own bridge
+"open" or "closed." The bridge is the only thing that ever touches Discord's
+local RPC connection, which is why it has to run on a PC with Discord desktop
+open.
 
 ## Requirements
 
@@ -47,7 +77,10 @@ The wizard will:
 
 1. Ask for your game's name and your [Discord Application ID](https://discord.com/developers/applications)
    (create a free Discord Application, name it exactly what you want to show
-   up in your status).
+   up in your status). While you're in the developer portal, upload a game
+   icon under **Rich Presence → Art Assets** and give it the icon key you
+   enter in the wizard — without one, Discord shows a generic placeholder
+   instead of your game's actual icon.
 2. Generate a random shared secret so only your own phone can trigger it.
 3. Live-test the Discord connection right there — you'll know immediately if
    something's wrong, instead of finding out later.
@@ -61,6 +94,26 @@ Then configure your phone:
 - iOS: `docs/ios-shortcuts.md`
 - Reaching the bridge when you're not on the same WiFi (e.g. on cellular
   data): `docs/tailscale.md`
+
+## Checking it's actually working
+
+Before wiring up your phone, confirm the bridge itself is connected to
+Discord:
+
+```bash
+curl "http://localhost:<PORT>/health?token=<SHARED_SECRET>"
+```
+
+Returns `200 ready` once Discord desktop is open and connected, or
+`503 not ready` if Discord isn't reachable yet — useful for debugging without
+having to open the game every time, and safe to hit repeatedly since it never
+changes your presence.
+
+Once that's green, you can manually fire `/start` and `/stop` the same way
+(see `config.example.env` for your port and secret) before ever touching
+Tasker/MacroDroid/Shortcuts — if a manual `curl` to `/start` shows up on
+Discord, the bridge side is fully proven and any remaining issue is on the
+phone-automation side.
 
 ## Platform support
 
