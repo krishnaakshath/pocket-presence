@@ -11,7 +11,11 @@ function timingSafeTokenMatch(supplied, secret) {
 
 function buildActivity({ gameName, iconKey }) {
   const activity = {
-    details: 'In a match',
+    // Detection is app-open/closed only (from a phone automation trigger)
+    // — there's no way to know if the player is actually in a match, in a
+    // lobby, or in menus, so this must not claim a match state it can't
+    // verify.
+    details: 'In-Game',
     state: gameName,
     startTimestamp: new Date(),
     instance: false,
