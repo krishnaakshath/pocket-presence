@@ -36,15 +36,15 @@ native support.
 
 ```mermaid
 sequenceDiagram
-    participant Game as Game on your phone
-    participant Auto as Tasker / MacroDroid<br>(or Shortcuts on iOS)
-    participant Bridge as PocketPresence<br>(runs on your PC)
+    participant Game as Game (your phone)
+    participant Auto as Tasker / MacroDroid
+    participant Bridge as PocketPresence (your PC)
     participant Discord as Discord desktop
 
     Game->>Auto: App opened
     Auto->>Bridge: POST /start?token=...
     Bridge->>Discord: Set Rich Presence (local RPC)
-    Note over Discord: Friends see "Playing <Game>"
+    Note over Discord: Friends see "Playing Call of Duty: Mobile"
 
     Game->>Auto: App closed
     Auto->>Bridge: POST /stop?token=...
