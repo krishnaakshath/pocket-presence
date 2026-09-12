@@ -1,5 +1,9 @@
 # PocketPresence
 
+[![License: MIT](https://img.shields.io/github/license/krishnaakshath/pocket-presence)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/krishnaakshath/pocket-presence?style=social)](https://github.com/krishnaakshath/pocket-presence/stargazers)
+[![Node.js >= 20](https://img.shields.io/badge/node-%3E%3D20-brightgreen)](https://nodejs.org)
+
 Discord Rich Presence ("Playing X") for any mobile game that doesn't natively
 support it — Call of Duty: Mobile is the motivating example throughout this
 README, but nothing in the code is CODM-specific. Point PocketPresence at any
@@ -147,6 +151,15 @@ npm start
 - No patching or reverse-engineering of any game client to add native
   Discord SDK support — that's a different (and much harder, ToS-risky)
   problem than this project takes on.
+
+## Contributing
+
+Issues and pull requests are welcome — especially real-world reports from
+Windows or Linux, since those platform installers are the one thing that
+hasn't been verified on real hardware yet (see Platform support above).
+
+If this saved you from manually toggling your Discord status, a star helps
+other people in the same situation find it.
 
 ## License
 
